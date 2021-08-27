@@ -67,10 +67,12 @@ class Dataset(data.Dataset):
 
     def prepare_input(self, i):
         # read xyz, normal, color from the ply file
-        vertices_path = os.path.join(self.data_root, cfg.vertices,
-                                     '{}.npy'.format(i))
-        xyz = np.load(vertices_path).astype(np.float32)
-        nxyz = np.zeros_like(xyz).astype(np.float32)
+        vertices_path = os.path.join(self.data_root, cfg.vertices,'{}.obj'.format(i))
+        xyz, faces = load_obj_mesh(vertices_path) # np array
+        # vertiecs = vertices.astype(np.float32)
+        
+        # xyz = np.load(vertices_path).astype(np.float32)
+        # nxyz = np.zeros_like(xyz).astype(np.float32)
 
         # obtain the original bounds for point sampling
         min_xyz = np.min(xyz, axis=0)
@@ -183,3 +185,90 @@ class Dataset(data.Dataset):
 
     def __len__(self):
         return len(self.ims)
+
+
+def load_obj_mesh(mesh_file):
+    vertex_data = []
+    norm_data = []
+    uv_data = []
+
+    face_data = []
+    face_norm_data = []
+    face_uv_data = []
+
+    if isinstance(mesh_file, str):
+        f = open(mesh_file, "r")
+    else:
+        f = mesh_file
+    for line in f:
+        if isinstance(line, bytes):
+            line = line.decode("utf-8")
+        if line.startswith('#'):
+            continue
+        values = line.split()
+        if not values:
+            continue
+
+        if values[0] == 'v':
+            v = list(map(float, values[1:4]))
+            vertex_data.append(v)
+        elif values[0] == 'vn':
+            vn = list(map(float, values[1:4]))
+            norm_data.append(vn)
+        elif values[0] == 'vt':
+            vt = list(map(float, values[1:3]))
+            uv_data.append(vt)
+
+        elif values[0] == 'f':
+            # quad mesh
+            if len(values) > 4:
+                f = list(map(lambda x: int(x.split('/')[0]), values[1:4]))
+                face_data.append(f)
+                f = list(map(lambda x: int(x.split('/')[0]), [values[3], values[4], values[1]]))
+                face_data.append(f)
+            # tri mesh
+            else:
+                f = list(map(lambda x: int(x.split('/')[0]), values[1:4]))
+                face_data.append(f)
+            
+            # deal with texture
+            if len(values[1].split('/')) >= 2:
+                # quad mesh
+                if len(values) > 4:
+                    f = list(map(lambda x: int(x.split('/')[1]), values[1:4]))
+                    face_uv_data.append(f)
+                    f = list(map(lambda x: int(x.split('/')[1]), [values[3], values[4], values[1]]))
+                    face_uv_data.append(f)
+                # tri mesh
+                elif len(values[1].split('/')[1]) != 0:
+                    f = list(map(lambda x: int(x.split('/')[1]), values[1:4]))
+                    face_uv_data.append(f)
+            # deal with normal
+            if len(values[1].split('/')) == 3:
+                # quad mesh
+                if len(values) > 4:
+                    f = list(map(lambda x: int(x.split('/')[2]), values[1:4]))
+                    face_norm_data.append(f)
+                    f = list(map(lambda x: int(x.split('/')[2]), [values[3], values[4], values[1]]))
+                    face_norm_data.append(f)
+                # tri mesh
+                elif len(values[1].split('/')[2]) != 0:
+                    f = list(map(lambda x: int(x.split('/')[2]), values[1:4]))
+                    face_norm_data.append(f)
+        elif 'mtllib' in line.split():
+            mtlname = line.split()[-1]
+            mtlfile = os.path.join(os.path.dirname(mesh_file), mtlname)
+            with open(mtlfile, 'r') as fmtl:
+                mtllines = fmtl.readlines()
+                for mtlline in mtllines:
+                    # if mtlline.startswith('map_Kd'):
+                    if 'map_Kd' in mtlline.split():
+                        texname = mtlline.split()[-1]
+                        texfile = os.path.join(os.path.dirname(mesh_file), texname)
+                        texture_image = cv2.imread(texfile)
+                        texture_image = cv2.cvtColor(texture_image, cv2.COLOR_BGR2RGB)
+                        break
+
+    vertices = np.array(vertex_data)
+    faces = np.array(face_data) - 1
+    return vertices, faces
