@@ -61,8 +61,8 @@ class Network(nn.Module):
 
     def interpolate_features(self, grid_coords, feature_volume):
         features = []
-        for volume in feature_volume.double():
-            feature = F.grid_sample(volume,
+        for volume in feature_volume:
+            feature = F.grid_sample(volume.double(),
                                     grid_coords,
                                     padding_mode='zeros'
                                     ) # align_corners=True
