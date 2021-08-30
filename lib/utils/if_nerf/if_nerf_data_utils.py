@@ -209,6 +209,7 @@ def sample_ray_h36m(img, msk, K, R, T, bounds, nrays, split):
             if len(coord_face) > 0:
                 coord = np.concatenate([coord_body, coord_face, coord], axis=0)
             else:
+                print("line 212 coord_body.shape=", coord_body.shape)
                 coord = np.concatenate([coord_body, coord], axis=0)
 
             ray_o_ = ray_o[coord[:, 0], coord[:, 1]]
