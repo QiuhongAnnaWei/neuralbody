@@ -64,8 +64,8 @@ class Network(nn.Module):
         for volume in feature_volume:
             feature = F.grid_sample(volume,
                                     grid_coords,
-                                    padding_mode='zeros',
-                                    align_corners=True)
+                                    padding_mode='zeros'
+                                    ) # align_corners=True
             features.append(feature)
         features = torch.cat(features, dim=1)
         features = features.view(features.size(0), -1, features.size(4))
