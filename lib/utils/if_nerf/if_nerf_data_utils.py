@@ -196,7 +196,7 @@ def sample_ray_h36m(img, msk, K, R, T, bounds, nrays, split):
 
             # sample rays on body
             coord_body = np.argwhere(msk == 1)
-            coord_body = coord_body[np.random.randint(0, len(coord_body), n_body)] if len(coord_body) > 0 else []
+            coord_body = coord_body[np.random.randint(0, len(coord_body), n_body)] if len(coord_body) > 0 else coord_body
             # sample rays on face
             coord_face = np.argwhere(msk == 13)
             if len(coord_face) > 0:
