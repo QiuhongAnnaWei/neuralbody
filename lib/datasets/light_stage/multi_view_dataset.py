@@ -89,9 +89,11 @@ class Dataset(data.Dataset):
         params_path = os.path.join(self.data_root, cfg.params,
                                    '{}.npy'.format(i))
         params = np.load(params_path, allow_pickle=True).item()
-        Rh = params['Rh']
+        # Rh = params['Rh']
+        Rh = params['pose'][:3].copy().reshape(1, -1) # QUESTION
         R = cv2.Rodrigues(Rh)[0].astype(np.float32)
-        Th = params['Th'].astype(np.float32)
+        # Th = params['Th'].astype(np.float32)
+        Th = params["transl"].reshape(1,-1) # QUESTION
         xyz = np.dot(xyz - Th, R)
 
         # obtain the bounds for coord construction
