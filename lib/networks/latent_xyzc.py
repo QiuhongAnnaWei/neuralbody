@@ -48,8 +48,8 @@ class Network(nn.Module):
 
     def get_grid_coords(self, pts, sp_input):
         # convert xyz to the voxel coordinate dhw
-        dhw = pts[..., [2, 1, 0]]
-        min_dhw = sp_input['bounds'][:, 0, [2, 1, 0]]
+        dhw = pts[..., [2, 1, 0]].double()
+        min_dhw = sp_input['bounds'][:, 0, [2, 1, 0]].double()
         dhw = dhw - min_dhw[:, None]
         dhw = dhw / torch.tensor(cfg.voxel_size).to(dhw)
         # convert the voxel coordinate to [-1, 1]
