@@ -134,7 +134,7 @@ class Dataset(data.Dataset):
         msk = cv2.undistort(msk, K, D)
 
         R = np.array(self.cams['R'][cam_ind])
-        T = np.array(self.cams['T'][cam_ind]) / 1000.
+        T = np.array(self.cams['T'][cam_ind]).reshape(-1, 1) / 1000.
 
         # reduce the image resolution by ratio
         H, W = int(img.shape[0] * cfg.ratio), int(img.shape[1] * cfg.ratio)
