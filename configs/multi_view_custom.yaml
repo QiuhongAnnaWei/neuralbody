@@ -10,9 +10,9 @@ train_dataset:
     split: 'train'
 
 test_dataset:
-    data_root: 'path/to/custom_data'
+    data_root: 'doom_data'
     human: 'custom'
-    ann_file: 'path/to/custom_data/annots.npy'
+    ann_file: 'doom_data/annots.npy'
     split: 'test'
 
 # data options
